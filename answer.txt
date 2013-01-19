@@ -1,0 +1,252 @@
+Abe=Abraham=Ham
+Al=Alec=Alex=Alexander=Alexandra=Alexis=Eck=Lex=Lexie=Sandy=Xander
+Alan=Allie=Ally
+Alf=Alfie=Alfred=Fred
+Amanda=Amy=Mandy
+Andie=Andrea=Andrew=Andy=Drea=Drew
+Andra=Sally=Sandra
+Ann=Anna=Anne=Annie
+Ant=Anthony=Tony
+Archibald=Archie=Archy
+Art=Arthur=Artie
+Barb=Barbara=Barbie
+Bell=Bella=Isabella=Izzy
+Ben=Benjamin=Benny
+Bert=Bob=Bobby=Bobert=Rob=Robby=Robert
+Bess=Besse=Bessie=Bessy=Beth=Betsy=Bettie=Betty=Elisa=Eliza=Elizabeth=Lib=Libby=Lisa=Liz=Liza=Lizzie
+Bill=Billy=Will=William=Willie=Willy
+Bobbie=Robbie=Roberta
+Carmela=Carmelita=Lita
+Carol=Caroline=Carolyn=Carrie=Cary=Lyn
+Charles=Charlie=Charly=Chas=Chuck
+Chris=Christopher=Criffer=Kit=Topher
+Cilla=Prill=Prisca=Priscilla=Priss
+Dan=Daniel=Danny
+Dave=David=Davy
+Deb=Debbie=Deborah
+Dick=Richard=Rick=Ritchie
+Dom=Dominic=Dominique=Dommy
+Dorothy=Dot=Dottie
+Ed=Edward=Ned
+Eleanor=Helen=Nell=Nellie=Nelly
+Flo=Florence=Florrie
+Frank=Frankie=Franklin
+Gabe=Gabriel=Gaby
+Gillian=Jill=Jilly
+Ginger=Ginny=Virginia
+Hal=Hank=Harry=Henry
+Jack=Jackie=Jock=John=Johnny
+Jacob=Jake=Jakey
+James=Jim=Jimbo=Jimmy
+Jan=Janice=Janis
+Jane=Janet=Janete=Janette=Jannete=Jannette=Jayne=Jeanie=Jeannie=Jeanny=Jenny=Jo=Joan=Joann=Joanna=Joanne=Johanna=Yoanna
+Jess=Jessica=Jessie
+Joe=Joel=Joey=Joseph
+Jon=Jonathan=Jonnie=Jonny=Nathan
+Kat=Kate=Katherine=Kathy=Kay
+Ken=Kenneth=Kenny
+Kim=Kimberly=Kimmy
+Kirk=Kirkus=Kirkwood
+Larry=Laurence=Laurie=Lawrence
+Len=Lennie=Lenny=Leonard
+Lena=Maddie=Madeleine=Magda=Magdalena=Magdalene
+Lou=Louie=Louis
+Madge=Maggie=Margaret=Meg=Peg=Peggy
+Mary=Molly=Polly
+Michael=Mick=Micky=Mike=Mikey
+Millicent=Millie=Milly
+Nicholas=Nick=Nicky
+Nici=Nicki=Nickie=Nicola=Nicole=Niki=Nikki
+Oswald=Oz=Ozzie=Ozzy
+Pat=Patricia=Patty=Tricia=Trish
+Pete=Peter=Petey
+Philippa=Pip=Pippa=Pippy
+Pru=Prudence=Prue
+Reg=Reggie=Reginald
+Rod=Roddy=Rodney
+Ron=Ronald=Ronnie
+Rose=Rosemary=Rosie=Rosy
+Rudolfe=Rudolph=Rudy
+Sadie=Sara=Sarah
+Sam=Samantha=Sammy=Samuel
+Steph=Stephanie=Stephy
+Stephen=Steve=Stevie
+Sue=Susan=Susie=Suzy
+Ted=Teddy=Theodore
+Tel=Terence=Terry
+Terri=Tess=Tessa=Theresa
+Thomas=Tom=Tommy
+Tim=Timmy=Timothy
+Tor=Tory=Vick=Vickie=Vicky=Victoria
+Zach=Zachary=Zack
+Zeb=Zebadiah=Zebby
+
+=========================== program in Java =========================== 
+
+// nick.java
+// 2013.01.19 Hiroki Tanioka taniokah@gmail.com
+
+import java.io.*;
+import java.util.*;
+
+public class nick {
+	private final static int datasize = 100000;	// max data sets
+	
+	public static void main(String[] args) {
+		try {
+			File f = new File(args[0]);
+			FileInputStream fis = new FileInputStream(f);
+			InputStreamReader in = new InputStreamReader(fis);
+			BufferedReader br = new BufferedReader(in);
+			
+			Map<String, Set<String>> dic = new TreeMap<String, Set<String>>();
+			store(br, dic);	// store names into dictionary
+			br.close();
+			
+			Set<String> groups = new TreeSet<String>();
+			unique(dic, groups);
+			output(dic, groups);
+			
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	static void store(BufferedReader br, Map<String, Set<String>> dic) throws Exception {
+		for (int i = 0; i < datasize; i++) {
+			String line = br.readLine();
+			if (line == null) {
+				break;
+			}
+			if (line.length() <= 0) {
+				continue;
+			}
+			//System.err.println(line);
+			String[] names = line.split("=");
+			List<String> namelist = Arrays.asList(names);
+			Set<String> keyset = new TreeSet<String>(namelist);
+			Set<String> groups = new TreeSet<String>();
+			groups.addAll(keyset);	// set salvage point
+			
+			salvage(dic, keyset, groups);
+			update(dic, groups);
+		}
+	}
+	
+	static void salvage(Map<String, Set<String>> dic, Set<String> keyset, Set<String> groups) {
+		Iterator<String> it = keyset.iterator();
+		while (it.hasNext()) {
+			String key = it.next();
+			if (key == null || "".equals(key)) {
+				continue;
+			}
+			Set<String> group = dic.get(key);
+			if (group == null) {
+				continue;
+			}
+			groups.addAll(group);
+		}
+	}
+	
+	static void update(Map<String, Set<String>> dic, Set<String> groups) {
+		Set<String> keyset = groups;
+		Iterator<String> it = keyset.iterator();
+		while (it.hasNext()) {
+			String key = it.next();
+			if (key == null || "".equals(key)) {
+				continue;
+			}
+			Set<String> group = dic.get(key);
+			if (group == null) {
+				group = new TreeSet<String>();
+			}
+			group.addAll(groups);
+			dic.put(key, group);	// update group to key
+		}
+	}
+	
+	static void unique(Map<String, Set<String>> dic, Set<String> groups) {
+		// unique results
+		Iterator<Set<String>> it = dic.values().iterator();
+		while (it.hasNext()) {
+			Set<String> group = it.next();
+			if (group == null || group.size() <= 0) {
+				continue;
+			}
+			StringBuilder names = new StringBuilder();
+			Iterator<String> git = group.iterator();
+			while (git.hasNext()) {
+				String name = git.next();
+				if (name == null || "".equals(name)) {
+					continue;
+				}
+				if (names.length() > 0) {
+					names.append("=");
+				}
+				names.append(name);
+			}
+			//System.err.println(names);
+			groups.add(names.toString());
+		}
+	}
+	
+	static void output(Map<String, Set<String>> dic, Set<String> groups) {
+		Iterator<String> it = groups.iterator();
+		int ucount = 0;
+		while (it.hasNext()) {
+			String group = it.next();
+			if (group == null || "".equals(group)) {
+				continue;
+			}
+			System.out.println(group);
+			ucount++;
+		}
+		//System.err.println("uniq count = " + ucount);
+	}
+}
+
+======================================================================= 
+
+ゆうき先生の本は業務や社員教育でもよく利用させていただいています。
+数学ガールも読もう読もうと思いつつまだ読めてませんが、是非読んでみたいと
+思っているところです。
+
+今回の課題、なかなか面白いと思います。ソーシャルなデータを解析する類似
+課題があり、今も検討中ですが、Key-Value Storeなどをうまく利用することで、
+今後はもっと大規模な解析が可能になってくるだろうと予測しています。
+
+さて、今回の課題に対する解答ですが、かなり力技ではありますがプログラムは
+わりとシンプルに実装できたと思っています。方法論は以下です。
+
+1. すべての名前とそのグループを読み込む => store
+1-1. 同じグループの名前をすべて取り出す => salvage
+1-2. 取り出した名前のグループをすべて更新する => update
+2. すべての名前のグループをユニークする => unique
+3. ユニークされた名前のグループを書き出す = > output
+
+ポイントは、複雑なことを考えず、辞書順で 名前-{名前,名前,...} を作り、
+さらに{名前,名前,...}を毎回更新してすべての名前について同じ内容とします。
+
+1の store が終了した時点で、すべての名前を key として、同じグループに属する
+名前については、value が同じ内容となります。
+
+2の uniqe で value のみ取り出して重複を取り除きます。
+
+3の output でユニークされた value(名前のグループ) を出力したらおわりです。
+
+欠点があるとすれば、store の時点で、重複を許すような実装なので、大規模
+データに対してはメモリが溢れるおそれがあることです。ここは、名前を ID 化
+するとか、名前グループをクラスタとして設計しなおすことでメモリ効率を上げる
+ことが可能と思われます。
+
+もしくは、今流行りの Key-Value Store で実装することで、分散処理してしまう
+というやり方もあるかもしれません。
+
+Hiroki Tanioka
+taniokah@gmail.com
+
+======================================================================= 
